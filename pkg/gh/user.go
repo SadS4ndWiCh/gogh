@@ -6,18 +6,20 @@ import (
 	"net/http"
 
 	"github.com/SadS4ndWiCh/gogh/pkg/htmlx"
+	"golang.org/x/net/html"
 )
 
 type GithubUser struct {
-	Login       string `json:"login"`
-	Name        string `json:"name"`
-	AvatarUrl   string `json:"avatar_url"`
-	HtmlUrl     string `json:"html_url"`
-	PublicRepos string `json:"public_repos"`
-	Followers   string `json:"followers"`
-	Following   string `json:"following"`
-	Bio         string `json:"bio"`
-	Blog        string `json:"-"`
+	Login       string   `json:"login"`
+	Name        string   `json:"name"`
+	AvatarUrl   string   `json:"avatar_url"`
+	HtmlUrl     string   `json:"html_url"`
+	PublicRepos string   `json:"public_repos"`
+	Followers   string   `json:"followers"`
+	Following   string   `json:"following"`
+	Bio         string   `json:"bio"`
+	Links       []string `json:"links"`
+	// Blog        string   `json:"blog"`
 }
 
 func GetUser(user string) (*GithubUser, error) {
@@ -54,6 +56,13 @@ func GetUser(user string) (*GithubUser, error) {
 	avatarEl := htmlx.GetElementByClassname(sidebarEl, "avatar avatar-user width-full border color-bg-default")
 	avatarUrl, _ := htmlx.GetAttribute(avatarEl, "src")
 
+	// blogEl := htmlx.GetElementByAttribute(sidebarEl, "data-test-selector", "profile-website-url")
+	// var blogUrl string
+	// if blogEl != nil {
+	// 	blogWebsiteUrlEl := htmlx.GetElementByTagName(blogEl, "a")
+	// 	blogUrl, _ = htmlx.GetAttribute(blogWebsiteUrlEl, "href")
+	// }
+
 	followersHref := fmt.Sprintf("%s?tab=followers", url)
 	followersContainerEl := htmlx.GetElementByAttribute(doc, "href", followersHref)
 	followersEl := htmlx.GetElementByTagName(followersContainerEl, "span")
@@ -68,6 +77,8 @@ func GetUser(user string) (*GithubUser, error) {
 	publicReposEl := htmlx.GetElementByClassname(publicReposContainerEl, "Counter")
 	publicRepos, _ := htmlx.GetTextContent(publicReposEl)
 
+	links := getLinks(sidebarEl)
+
 	ghUser := &GithubUser{
 		Login:       username,
 		Name:        name,
@@ -77,8 +88,22 @@ func GetUser(user string) (*GithubUser, error) {
 		PublicRepos: publicRepos,
 		Followers:   followers,
 		Following:   following,
-		Blog:        "",
+		Links:       links,
+		// Blog:        blogUrl,
 	}
 
 	return ghUser, nil
+}
+
+func getLinks(sidebarEl *html.Node) (links []string) {
+	linksContainerEl := htmlx.GetElementByClassname(sidebarEl, "vcard-details")
+	linksEl := htmlx.GetElementsByTagName(linksContainerEl, "a")
+
+	for _, link := range linksEl {
+		if url, exists := htmlx.GetAttribute(link, "href"); exists {
+			links = append(links, url)
+		}
+	}
+
+	return
 }
