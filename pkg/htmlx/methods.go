@@ -17,12 +17,12 @@ func GetAttribute(n *html.Node, key string) (string, bool) {
 }
 
 func GetTextContent(n *html.Node) (string, bool) {
-	if n.FirstChild == nil {
+	if n == nil {
 		return "", false
 	}
 
-	if n.FirstChild.Type == html.TextNode {
-		return strings.TrimSpace(n.FirstChild.Data), true
+	if n.Type == html.TextNode {
+		return strings.TrimSpace(n.Data), true
 	}
 
 	return GetTextContent(n.FirstChild)
