@@ -5,8 +5,8 @@ An experiment to do web scraping with GO, creating my own functions to get eleme
 ## 🎏 Routes
 
 #### Get user data
-```http
-  GET /users/{username}
+```
+GET /users/{username}
 ```
 ```json
 // "/users/SadS4ndWiCh"
