@@ -26,6 +26,9 @@ GET /users/{username}
 ```
 GET /users/{username}/repos
 ```
+| Query Param | Type     | Description                                    |
+| :---------- | :------- | :--------------------------------------------- |
+| `page`      | `number` | **Optional**: The current page. Default to `1` |
 ```json
 // "/users/SadS4ndWiCh/repos"
 
