@@ -22,3 +22,25 @@ GET /users/{username}
   "bio": "world.execute(me);"
 }
 ```
+#### Get user repos 
+```
+GET /users/{username}/repos
+```
+```json
+// "/users/SadS4ndWiCh/repos"
+
+[
+  {
+    "name": "gogh",
+    "description": "🐙 An experiment to do web scraping with GO, creating my own functions to get elements in HTML on top of the `net/html` package.",
+    "updated_at": "2024-02-18T01:10:35Z",
+    "git_url": "git://github.com/SadS4ndWiCh/gogh.git",
+    "ssh_url": "git@github.com:SadS4ndWiCh/gogh.git",
+    "clone_url": "https://github.com/SadS4ndWiCh/gogh.git",
+    "stargazers_count": 0,
+    "language": "Go"
+  },
+  { ... }
+]
+```
+
