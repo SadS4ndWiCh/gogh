@@ -61,12 +61,9 @@ func (uh *UserHandler) GetRepos(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var pageNumber int
-	n, err := strconv.Atoi(r.URL.Query().Get("page"))
+	pageNumber, err := strconv.Atoi(r.URL.Query().Get("page"))
 	if err != nil {
 		pageNumber = 1
-	} else {
-		pageNumber = n
 	}
 
 	cacheKey := fmt.Sprintf("%s/page=%d", r.URL.Path, pageNumber)
