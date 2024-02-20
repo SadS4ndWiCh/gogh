@@ -10,6 +10,7 @@ import (
 )
 
 type GithubUser struct {
+	Id          string   `json:"id"`
 	Login       string   `json:"login"`
 	Name        string   `json:"name"`
 	AvatarUrl   string   `json:"avatar_url"`
@@ -19,7 +20,6 @@ type GithubUser struct {
 	Following   string   `json:"following"`
 	Bio         string   `json:"bio"`
 	Links       []string `json:"links"`
-	// Blog        string   `json:"blog"`
 }
 
 func GetUser(user string) (*GithubUser, error) {
@@ -44,6 +44,9 @@ func GetUser(user string) (*GithubUser, error) {
 		return nil, GHError{message: "Invalid HTML", status: INVALID_HTML}
 	}
 
+	userIdEl := htmlx.GetElementByAttribute(doc, "name", "octolytics-dimension-user_id")
+	userId, _ := htmlx.GetAttribute(userIdEl, "content")
+
 	nameEl := htmlx.GetElementByClassname(sidebarEl, "vcard-fullname")
 	name, _ := htmlx.GetTextContent(nameEl)
 
@@ -55,13 +58,6 @@ func GetUser(user string) (*GithubUser, error) {
 
 	avatarEl := htmlx.GetElementByClassname(sidebarEl, "avatar avatar-user width-full border color-bg-default")
 	avatarUrl, _ := htmlx.GetAttribute(avatarEl, "src")
-
-	// blogEl := htmlx.GetElementByAttribute(sidebarEl, "data-test-selector", "profile-website-url")
-	// var blogUrl string
-	// if blogEl != nil {
-	// 	blogWebsiteUrlEl := htmlx.GetElementByTagName(blogEl, "a")
-	// 	blogUrl, _ = htmlx.GetAttribute(blogWebsiteUrlEl, "href")
-	// }
 
 	followersHref := fmt.Sprintf("%s?tab=followers", url)
 	followersContainerEl := htmlx.GetElementByAttribute(doc, "href", followersHref)
@@ -80,6 +76,7 @@ func GetUser(user string) (*GithubUser, error) {
 	links := getLinks(sidebarEl)
 
 	ghUser := &GithubUser{
+		Id:          userId,
 		Login:       username,
 		Name:        name,
 		Bio:         bio,
@@ -89,7 +86,6 @@ func GetUser(user string) (*GithubUser, error) {
 		Followers:   followers,
 		Following:   following,
 		Links:       links,
-		// Blog:        blogUrl,
 	}
 
 	return ghUser, nil

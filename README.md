@@ -12,6 +12,7 @@ GET /users/{username}
 // "/users/SadS4ndWiCh"
 
 {
+  "id": "2507959",
   "login": "SadS4ndWiCh",
   "name": "Caio Vinícius",
   "avatar_url": "https://avatars.githubusercontent.com/u/71348567?v=4",
@@ -46,4 +47,3 @@ GET /users/{username}/repos
   { ... }
 ]
 ```
-
