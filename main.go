@@ -1,36 +1,23 @@
 package main
 
 import (
-	"fmt"
+	"flag"
 	"log"
-	"net/http"
 	"os"
 
-	"github.com/SadS4ndWiCh/gogh/http/routes"
+	"github.com/SadS4ndWiCh/gogh/api"
+	"github.com/SadS4ndWiCh/gogh/store"
 	_ "github.com/joho/godotenv/autoload"
-	"github.com/redis/go-redis/v9"
 )
 
 func main() {
-	mux := http.NewServeMux()
+    addr := flag.String("addr", ":3000", "The server address")
+    flag.Parse()
 
-	// if err := godotenv.Load(); err != nil {
-	// 	log.Fatal("Failed to load env file")
-	// }
+    cacheStore := store.NewRedisStore(os.Getenv("REDIS_URL"))
+    server := api.NewServer(*addr, cacheStore)
 
-	redisOpts, err := redis.ParseURL(os.Getenv("REDIS_URL"))
-	if err != nil {
-		panic(err)
-	}
-
-	redisClient := redis.NewClient(redisOpts)
-
-	userHandler := routes.NewUserHandler(redisClient)
-	mux.HandleFunc("GET /users/{username}", userHandler.GetUser)
-	mux.HandleFunc("GET /users/{username}/repos", userHandler.GetRepos)
-
-	fmt.Println("🐙 Server is running at http://localhost:3000")
-	if err := http.ListenAndServe(":3000", mux); err != nil {
+	if err := server.Listen(); err != nil {
 		log.Fatal(err)
 	}
 }

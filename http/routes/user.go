@@ -6,30 +6,29 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/SadS4ndWiCh/gogh/pkg/gh"
-	"github.com/redis/go-redis/v9"
+	"github.com/SadS4ndWiCh/gogh/store"
 )
 
 type UserHandler struct {
-	redis *redis.Client
+    cache store.Store
 }
 
-func NewUserHandler(redis *redis.Client) UserHandler {
-	return UserHandler{redis: redis}
+func NewUserHandler(cache store.Store) UserHandler {
+    return UserHandler{cache: cache}
 }
 
-func (uh *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 	username := r.PathValue("username")
 	if username == "" {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
-	cached, err := uh.redis.Get(r.Context(), r.URL.Path).Result()
-	if err == nil {
-		w.Write([]byte(cached))
+    cacheKey := fmt.Sprintf("user:%s", username)
+	if cached, err := h.cache.Get(r.Context(), cacheKey); err == nil {
+		w.Write([]byte(cached.(string)))
 		return
 	}
 
@@ -47,14 +46,14 @@ func (uh *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := uh.redis.Set(r.Context(), r.URL.Path, string(json), time.Duration(2*time.Hour)).Err(); err != nil {
-		log.Printf("[REDIS] Failed to set data: %s\n", err)
+	if err := h.cache.Set(r.Context(), r.URL.Path, string(json)); err != nil {
+		log.Printf("[CACHE] Failed to set data: %s\n", err)
 	}
 
 	w.Write(json)
 }
 
-func (uh *UserHandler) GetRepos(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) GetRepos(w http.ResponseWriter, r *http.Request) {
 	username := r.PathValue("username")
 	if username == "" {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -66,10 +65,9 @@ func (uh *UserHandler) GetRepos(w http.ResponseWriter, r *http.Request) {
 		pageNumber = 1
 	}
 
-	cacheKey := fmt.Sprintf("%s/page=%d", r.URL.Path, pageNumber)
-	cached, err := uh.redis.Get(r.Context(), cacheKey).Result()
-	if err == nil {
-		w.Write([]byte(cached))
+    cacheKey := fmt.Sprintf("user:repos(%d):%s", pageNumber, username)
+	if cached, err := h.cache.Get(r.Context(), cacheKey); err == nil {
+		w.Write([]byte(cached.(string)))
 		return
 	}
 
@@ -85,8 +83,8 @@ func (uh *UserHandler) GetRepos(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := uh.redis.Set(r.Context(), cacheKey, string(json), time.Duration(2*time.Hour)).Err(); err != nil {
-		log.Printf("[REDIS] Failed to set data: %s\n", err)
+	if err := h.cache.Set(r.Context(), cacheKey, string(json)); err != nil {
+		log.Printf("[CACHE] Failed to set data: %s\n", err)
 	}
 
 	w.Write(json)
