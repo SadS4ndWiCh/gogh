@@ -7,16 +7,16 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/SadS4ndWiCh/gogh/internal/store"
 	"github.com/SadS4ndWiCh/gogh/pkg/gh"
-	"github.com/SadS4ndWiCh/gogh/store"
 )
 
 type UserHandler struct {
-    cache store.Store
+	cache store.Store
 }
 
 func NewUserHandler(cache store.Store) UserHandler {
-    return UserHandler{cache: cache}
+	return UserHandler{cache: cache}
 }
 
 func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
@@ -26,7 +26,7 @@ func (h *UserHandler) GetUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-    cacheKey := fmt.Sprintf("user:%s", username)
+	cacheKey := fmt.Sprintf("user:%s", username)
 	if cached, err := h.cache.Get(r.Context(), cacheKey); err == nil {
 		w.Write([]byte(cached.(string)))
 		return
@@ -65,7 +65,7 @@ func (h *UserHandler) GetRepos(w http.ResponseWriter, r *http.Request) {
 		pageNumber = 1
 	}
 
-    cacheKey := fmt.Sprintf("user:repos(%d):%s", pageNumber, username)
+	cacheKey := fmt.Sprintf("user:repos(%d):%s", pageNumber, username)
 	if cached, err := h.cache.Get(r.Context(), cacheKey); err == nil {
 		w.Write([]byte(cached.(string)))
 		return
